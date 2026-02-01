@@ -1,0 +1,19 @@
+# FastAPI Requirements for House Price Prediction API
+# ===================================================
+
+# Web Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# Machine Learning
+tensorflow==2.15.0
+scikit-learn==1.3.2
+joblib==1.3.2
+
+# Data Processing
+pandas==2.1.4
+numpy==1.26.3
+
+# Additional utilities
+python-dateutil==2.8.2
