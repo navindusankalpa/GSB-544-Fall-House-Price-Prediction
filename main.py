@@ -16,15 +16,16 @@ from contextlib import asynccontextmanager
 # Configuration
 # ============================================================================
 
-# Paths to your saved model and preprocessors
-ANN_MODEL_PATH = r"model/ann/0_2_score_model.keras"
-ANN_SCALER_PATH = r"model/ann/scaler.joblib"
-ANN_LABEL_ENCODERS_PATH = r"model/ann/label_encoders.joblib"
-OUTPUT_DIR = r"app/predictions"
+# Paths to your saved model and preprocessors (cross-platform compatible)
+BASE_DIR = Path(__file__).parent.parent
+ANN_MODEL_PATH = BASE_DIR / "app" / "model" / "ann" / "0_2_score_model.keras"
+ANN_SCALER_PATH = BASE_DIR / "app" / "model" / "ann" / "scaler.joblib"
+ANN_LABEL_ENCODERS_PATH = BASE_DIR / "app" / "model" / "ann" / "label_encoders.joblib"
+OUTPUT_DIR = BASE_DIR / "app" / "predictions"
 
-XGB_MODEL_PATH = r"model/xgboost/xgboost_model.pkl"
-XGB_SCALER_PATH = r"model/xgboost/xgboost_scaler.joblib"
-XGB_LABEL_ENCODER_PATH = r"model/xgboost/xgboost_label_encoders.joblib"
+XGB_MODEL_PATH = BASE_DIR / "app" / "model" / "xgboost" / "xgboost_model.pkl"
+XGB_SCALER_PATH = BASE_DIR / "app" / "model" / "xgboost" / "xgboost_scaler.joblib"
+XGB_LABEL_ENCODER_PATH = BASE_DIR / "app" / "model" / "xgboost" / "xgboost_label_encoders.joblib"
 
 # Create output directory if it doesn't exist
 Path(OUTPUT_DIR).mkdir(exist_ok=True)
@@ -73,23 +74,23 @@ def load_model_and_preprocessors():
     try:
         # Load Keras model
         print(f"Loading model from {ANN_MODEL_PATH}...")
-        model = tf.keras.models.load_model(ANN_MODEL_PATH)
+        model = tf.keras.models.load_model(str(ANN_MODEL_PATH))
         print("Model loaded successfully")
         
         # Load scaler
         print(f"Loading scaler from {ANN_SCALER_PATH}...")
-        scaler = joblib.load(ANN_SCALER_PATH)
+        scaler = joblib.load(str(ANN_SCALER_PATH))
         print("Scaler loaded successfully")
         
         # Load label encoders
         print(f"Loading label encoders from {ANN_LABEL_ENCODERS_PATH}...")
-        label_encoders = joblib.load(ANN_LABEL_ENCODERS_PATH)
+        label_encoders = joblib.load(str(ANN_LABEL_ENCODERS_PATH))
         print("Label encoders loaded successfully")
 
         print("Loading XGBoost model and components")
-        xgb_model = joblib.load(XGB_MODEL_PATH)
-        xgb_scaler = joblib.load(XGB_SCALER_PATH)
-        xgb_label_encoders = joblib.load(XGB_LABEL_ENCODER_PATH)
+        xgb_model = joblib.load(str(XGB_MODEL_PATH))
+        xgb_scaler = joblib.load(str(XGB_SCALER_PATH))
+        xgb_label_encoders = joblib.load(str(XGB_LABEL_ENCODER_PATH))
         
         print("\n" + "="*60)
         print("All components loaded successfully!")
@@ -326,8 +327,8 @@ async def predict_from_file(file: UploadFile = File(...)):
         # Save to file
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_filename = f"ann_predictions_{timestamp}.csv"
-        output_path = os.path.join(OUTPUT_DIR, output_filename)
-        output_df.to_csv(output_path, index=False)
+        output_path = OUTPUT_DIR / output_filename
+        output_df.to_csv(str(output_path), index=False)
         
         print(f"Predictions saved to: {output_path}")
         
@@ -388,8 +389,8 @@ async def xgb_predict(file: UploadFile = File(...)):
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_filename = f"xgb_predictions_{timestamp}.csv"
-        output_path = os.path.join(OUTPUT_DIR, output_filename)
-        output_df.to_csv(output_path, index=False)
+        output_path = OUTPUT_DIR / output_filename
+        output_df.to_csv(str(output_path), index=False)
         
         print(f"Predictions saved to: {output_path}")
         
@@ -412,13 +413,13 @@ async def list_predictions():
     List all saved prediction files.
     """
     try:
-        files = os.listdir(OUTPUT_DIR)
+        files = os.listdir(str(OUTPUT_DIR))
         csv_files = [f for f in files if f.endswith('.csv')]
         
         return {
             "prediction_files": csv_files,
             "count": len(csv_files),
-            "directory": OUTPUT_DIR
+            "directory": str(OUTPUT_DIR)
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error listing files: {str(e)}")
